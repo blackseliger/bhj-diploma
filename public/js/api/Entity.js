@@ -58,7 +58,7 @@ class Entity {
     let xhr = new XMLHttpRequest();
     xhr.responseType = 'json';
     xhr.open('GET', `${Entity.URL}`);
-    //  что делать с id нужно? Как с ним работать?
+    //  что делать с id нужно? Как с ним работать?                    !!!!!!!! Вопрос
   }
 
   /**

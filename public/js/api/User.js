@@ -4,12 +4,15 @@
  * Имеет свойство URL, равное '/user'.
  * */
 class User {
+
   /**
    * Устанавливает текущего пользователя в
    * локальном хранилище.
    * */
   static setCurrent(user) {
-
+    const userKeys = Object.keys(user);
+    const userValue = Object.values(user);
+    localStorage.user = `{${userKeys[0]}: ${userValue[0]}, ${userKeys[1]}: ${userValue[1]}}`;
   }
 
   /**
@@ -17,7 +20,7 @@ class User {
    * пользователе из локального хранилища.
    * */
   static unsetCurrent() {
-
+    localStorage.clear();
   }
 
   /**
@@ -25,7 +28,9 @@ class User {
    * из локального хранилища
    * */
   static current() {
-
+    const user = localStorage.getItem('user');
+    if (user !== null) return user;
+    return undefined;
   }
 
   /**
@@ -33,7 +38,11 @@ class User {
    * авторизованном пользователе.
    * */
   static fetch( data, callback = f => f ) {
-
+    console.log(data);
+    if ( data !== undefined) {
+      console.log(data)
+    } // это совсе не то что нужно, но не понимаю как пользоваться функцией createRequest в этом методе
+    // как работает параметр callback, каким образом он получает res
   }
 
   /**
@@ -53,7 +62,7 @@ class User {
    * User.setCurrent.
    * */
   static register( data, callback = f => f ) {
-
+  
   }
 
   /**
@@ -64,3 +73,16 @@ class User {
 
   }
 }
+
+
+
+const user = {
+  id: 12,
+  name: 'Vlad'
+};
+
+User.setCurrent( user );
+
+User.fetch(User.current(), ( err, response ) => {
+  console.log(response); 
+});

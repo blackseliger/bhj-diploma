@@ -38,11 +38,21 @@ class User {
    * авторизованном пользователе.
    * */
   static fetch( data, callback = f => f ) {
+    const response = createRequest({
+      url: "",
+      data,
+      responseType: "json",
+      method: "GET",
+      callback: (err, response) => {
+        if (err) console.log("Ошибка, если есть", err);
+        else console.log("Данные, если нет ошибки", response);
+      },
+    });
     console.log(data);
     if ( data !== undefined) {
       console.log(data)
     } // это совсе не то что нужно, но не понимаю как пользоваться функцией createRequest в этом методе
-    // как работает параметр callback, каким образом он получает res
+    // как работает параметр callback, каким образом он получает responce или error?
   }
 
   /**

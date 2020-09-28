@@ -1,46 +1,80 @@
 
 
+
+
 /**
  * Основная функция для совершения запросов
  * на сервер.
  * */
 const createRequest = (options = {}) => {
-    const {url, headers = undefined, data = null, responseType, method, callback} = options;
-    let xhr =  new XMLHttpRequest();
-    let methodCheck = true;
-    xhr.responseType = `${responseType}`;
+    const {url, headers = undefined, data = null, responseType, method, callback = (f) => f} = options;
+    console.log(method);
+    let xhr = new XMLHttpRequest();
+    xhr.responseType = responseType;
     xhr.withCredentials = true;
-    if ( headers !== undefined) {
-        const keyHeader = Object.keys(headers);
-        const valueHeader = Object.values(headers);
-        xhr.setRequestHeader(`${keyHeader}`, `${valueHeader}`);
-    };
 
-    if (method === `GET`){
-        if (data !== null) {
-            xhr.open(`${method}`, `${url}?mail=${data.mail}=${data.password}`);
-        } else {
-            xhr.open(`${method}`, `${url}`);
-        };   
-    } else {
-        let formData = new FormData();
-        formData.append('mail', `${data.mail}`);
-        formData.append('password', `${data.password}`);
-        xhr.open(`${method}`, `${url}`);
-        methodCheck = false;
+        if (method === 'GET') {
+            if (headers !== undefined) {
+                const keyHeader = Object.keys(data);
+                const valueHeader = Object.values(data);
+                xhr.setRequestHeader(`${keyHeader}`, `${valueHeader}`);
+            };
+            if (data !== null) {
+                xhr.open(method, `${url}?mail=${data.mail}&password=${data.password}`)
+            } else {
+                xhr.open(method, url);
+            };
+            xhr.addEventListener('readystatechange', () => {
+                if (xhr.readyState === 4 && xhr.status === 200){
+                    callback(xhr.response);
+                } else if (xhr.readyState === 4 && xhr.status === 500){
+                    callback(xhr.response);
+                }
+            })
+            xhr.send();
 
-    }
-
-    xhr.addEventListener('readystatechange', () => {
-        if (this.readyState === 4 && this.status === 200){
-            let data = JSON.parse(this.response);
-            callback(console.log(`С данными все хорошо,  ${data}`));
-            return data;
-        } else if (this.status === 400 || this.status === 500){
-            callback(console.log(`Произошла ошибка,  ${this.status}`));
+        } else if (method === 'POST') {
+            let formData = new FormData();
+            formData.append('mail', data.mail);
+            formData.append('password', data.password);
+            xhr.open(method, url);
+            xhr.addEventListener('readystatechange' , () => {
+                if (xhr.readyState === 4 && xhr.status === 200){
+                    callback(xhr.response);
+                } else if (xhr.readyState === 4 && xhr.status === 500){
+                    callback(xhr.response);
+                }
+            })
+            xhr.send( formData );
         }
-    });
-    (methodCheck === true) ? xhr.send() : xhr.send(formData)
 };
 
-// как осуществлять проверку написанного?
+
+
+createRequest({
+    url: "/user/login",
+    data: {
+      mail: "test@test",
+      password: "12345",
+    },
+    responseType: "json",
+    method: "POST",
+    callback: (err, response) => {
+      if (err) console.log("Ошибка, если есть", err);
+      else console.log("Данные, если нет ошибки", response);
+    },
+  });
+
+  createRequest({
+    url: "/user/login",
+    data: {
+      mail: "test@test",
+      password: "12345",
+    },
+    responseType: "json",
+    method: "GET",
+    callback: (err, response) => {
+      if (err) console.log("Ошибка, если есть", err);
+      else console.log("Данные, если нет ошибки", response);
+    },
+  });

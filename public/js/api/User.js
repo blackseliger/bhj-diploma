@@ -1,10 +1,13 @@
+
 /**
  * Класс User управляет авторизацией, выходом и
  * регистрацией пользователя из приложения
  * Имеет свойство URL, равное '/user'.
  * */
 class User {
-
+  constructor(){
+    this.URL = '/user';
+  }
   /**
    * Устанавливает текущего пользователя в
    * локальном хранилище.
@@ -38,21 +41,23 @@ class User {
    * авторизованном пользователе.
    * */
   static fetch( data, callback = f => f ) {
-    const response = createRequest({
-      url: "",
-      data,
-      responseType: "json",
-      method: "GET",
-      callback: (err, response) => {
-        if (err) console.log("Ошибка, если есть", err);
-        else console.log("Данные, если нет ошибки", response);
-      },
-    });
-    console.log(data);
-    if ( data !== undefined) {
-      console.log(data)
-    } // это совсе не то что нужно, но не понимаю как пользоваться функцией createRequest в этом методе
-    // как работает параметр callback, каким образом он получает responce или error?
+    let xhr = new XMLHttpRequest();
+    xhr.responseType = 'json';
+    xhr.open('GET', `/user/current`);  /// сначала вместо /user писал User.URL или this.URL, но Network был показан путь как undefined/current  Почему так выходит?
+    xhr.addEventListener('readystatechange', () => {
+      if( xhr.readyState === 4 && xhr.status === 200){
+        callback(response => {
+          if (response.success === true){
+            User.current().response.user.name
+          } else if (response.success === false){
+            User.unsetCurrent();
+          }
+        })
+      } else if (xhr.readyState === 4 && xhr.status === 500){
+        callback(response);
+      }
+    })
+    xhr.send(data);
   }
 
   /**
@@ -62,7 +67,24 @@ class User {
    * User.setCurrent.
    * */
   static login( data, callback = f => f ) {
-
+    let xhr = new XMLHttpRequest();
+    xhr.responseType = 'json';
+    xhr.open('POST', `/user/login`)
+    xhr.addEventListener('readystatechange', () => {
+      if (xhr.readyState === 4 && xhr.status === 200){
+        callback(response => {
+          if (response.success === true){
+            let {name, id} = response.user;
+            let userSet = {
+              id: id,
+              name: name,
+            };
+            User.setCurrent(userSet);
+          };
+        })
+      }
+    })
+    xhr.send(data);
   }
 
   /**
@@ -72,7 +94,24 @@ class User {
    * User.setCurrent.
    * */
   static register( data, callback = f => f ) {
-  
+    let xhr = new XMLHttpRequest();
+    xhr.responseType = 'json';
+    xhr.open('POST', `/user/register`);
+    xhr.addEventListener('readystatechange', () => {
+    if (xhr.readyState === 4 && xhr.status === 200){
+      callback(response => {
+        if (response.success === true){
+          let {name, id} = response.user;
+          let userSet = {
+            id: id,
+            name: name,
+          };
+          User.setCurrent(userSet);
+        };
+      })
+    };
+    });
+    xhr.send(data);
   }
 
   /**
@@ -80,19 +119,17 @@ class User {
    * выхода необходимо вызвать метод User.unsetCurrent
    * */
   static logout( data, callback = f => f ) {
-
+    let xhr = new XMLHttpRequest();
+    xhr.responseType = 'json';
+    xhr.open('POST', `/user/logout`);
+    xhr.addEventListener('readystatechange', () => {
+      callback(response => {
+        if (response.success === true){
+          User.unsetCurrent();
+        }
+      })
+    })
+    xhr.send(data);
   }
 }
 
-
-
-const user = {
-  id: 12,
-  name: 'Vlad'
-};
-
-User.setCurrent( user );
-
-User.fetch(User.current(), ( err, response ) => {
-  console.log(response); 
-});

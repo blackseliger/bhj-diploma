@@ -1,9 +1,15 @@
+
+
+
 /**
  * Класс Entity - базовый для взаимодействия с сервером.
  * Имеет свойство URL, равно пустой строке.
  * */
 class Entity {
+  constructor(){
+  this.URL = '';
 
+  }
   /**
    * Запрашивает с сервера список данных.
    * Это могут быть счета или доходы/расходы
@@ -12,19 +18,23 @@ class Entity {
   static list( data, callback = f => f ) {
     let xhr = new XMLHttpRequest();
     xhr.responseType = 'json';
-    xhr.open('GET', `${Entity.URL}`);
+    xhr.open('GET', this.URL);
     xhr.addEventListener('readystatechange', () => {
-      if (xhr.readyState === 4 && xhr.status === 200){
-        try {
-          let data = JSON.parse(xhr.response);
-          return data;
-        } catch (e) {
-          callback(`Произошла ошибка ${data}`);
-        }
-      } 
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        callback(xhr.response);
+      } else if (xhr.readyState === 4 && xhr.status === 500) {
+        callback(xhr.response);
+      }
     })
     xhr.send(data);
-  }
+    // createRequest({
+    //   url:  Entity.URL,
+    //   data,
+    //   responseType: "json",
+    //   method: "GET",
+    //   callback,
+    //   })
+  };
 
   /**
    * Создаёт счёт или доход/расход с помощью запроса
@@ -34,20 +44,26 @@ class Entity {
   static create( data, callback = f => f ) {
     let xhr = new XMLHttpRequest();
     xhr.responseType = 'json';
-    let dataCopy = Object.assign(data); // скопировал ради иммутабильности
+    xhr.open('POST', this.URL);
+    let dataCopy = Object.assign(data);
     dataCopy._method = "PUT";
-    xhr.open('POST', `${Entity.URL}`);
     xhr.addEventListener('readystatechange', () => {
-      if (xhr.readyState === 4 && xhr.status === 200){
-        try {
-          let data = JSON.parse(xhr.response);
-          return data;
-        } catch (e) {
-          callback(`Произошла ошибка ${data}`);
-        }
-      } 
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        callback(xhr.response);
+      } else if (xhr.readyState === 4 && xhr.status === 500){
+        callback(xhr.response);
+      }
+      xhr.send(data);
     })
-    xhr.send(dataCopy);
+    // let dataCopy = Object.assign(data); // скопировал ради иммутабильности
+    // dataCopy._method = "PUT";   // Спросить про свойство, т.к. в CR не учитывается такое свойство(1)
+    // createRequest({
+    //   url:  Entity.URL,
+    //   dataCopy,
+    //   responseType: "json",
+    //   method: "POST",
+    //   callback,
+    //   })
   }
 
   /**
@@ -57,8 +73,16 @@ class Entity {
   static get( id = '', data, callback = f => f ) {
     let xhr = new XMLHttpRequest();
     xhr.responseType = 'json';
-    xhr.open('GET', `${Entity.URL}`);
-    //  что делать с id нужно? Как с ним работать?                    !!!!!!!! Вопрос
+    this.URL = id;
+    xhr.open('GET', `/${this.URL}`);
+    xhr.addEventListener('readystatechange', () => {
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        callback(response);
+      } else if (xhr.readyState === 4 && xhr.status === 200) {
+        callback(response);
+      }
+    });
+    xhr.send(data);
   }
 
   /**
@@ -71,18 +95,17 @@ class Entity {
     let dataCopy = Object.assign(data);
     dataCopy._method = "DELETE";
     dataCopy.id = 21;
-    xhr.open('POST', `${Entity.URL}`);
+    xhr.open('POST', `${this.URL}`);
     xhr.addEventListener('readystatechange', () => {
-      if (xhr.readyState === 4 && xhr.status === 200){
-        try {
-          let data = JSON.parse(xhr.response);
-          return data;
-        } catch (e) {
-          callback(`Произошла ошибка ${data}`);
-        }
-      } 
-    })
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        callback(response);
+      } else if (xhr.readyState === 4 && xhr.status === 200) {
+        callback(response);
+      };
+    });
     xhr.send(dataCopy);
   }
 }
+
+
 
